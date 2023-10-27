@@ -12,10 +12,12 @@ target_compile_features(${PROJECT_NAME} PUBLIC
 
 target_sources(${PROJECT_NAME} PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
         include/ray/render/image_render.hpp
+        include/ray/vec.hpp
 
 )
 
 target_sources(${PROJECT_NAME} PRIVATE
         src/render/image_render.cpp
+        src/vec.cpp
         src/main.cpp
 )

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cassert>
 #include <fstream>
+#include <iomanip>
+
 
 namespace ray{
     class ImageRender{
