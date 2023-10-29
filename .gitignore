@@ -3,3 +3,7 @@ cmake-build-debug/
 .idea/*
 cmake-build*
 out
+.cache
+.vscode
+compile_commands.json
+
