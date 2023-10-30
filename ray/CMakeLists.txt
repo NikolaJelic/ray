@@ -6,7 +6,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 target_compile_features(${PROJECT_NAME} PUBLIC
-        cxx_std_23
+        cxx_std_20
 )
 
 
