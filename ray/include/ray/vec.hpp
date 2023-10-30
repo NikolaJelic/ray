@@ -4,6 +4,8 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <ostream>
+#include <iostream>
 
 namespace ray {
     template<typename Type, std::size_t Dimension>
@@ -21,126 +23,151 @@ namespace ray {
         Vec() = default;
 
         explicit constexpr Vec(Type const t) {
-            for (Type &value: values) { value = t; }
+            for (Type &value: m_values) { value = t; }
         }
 
         template<std::same_as<Type>... T>
         requires(sizeof...(T) == Dimension)
-        constexpr Vec(T const... t) : values{t...} {}
+        constexpr Vec(T const... t) : m_values{t...} {}
 
-        constexpr Type& at(std::size_t index){
+        constexpr Type &at(std::size_t index) {
             assert(index < Dimension);
-            return values[index];
+            return m_values[index];
+        }
+
+        constexpr Type const &at(std::size_t index) const {
+            assert(index < Dimension);
+            return m_values[index];
         }
 
 
-        constexpr Type& operator[](std::size_t index) { return at(index); }
-        constexpr Type const& operator[](std::size_t index) const { return at(index); }
+        constexpr Type &operator[](std::size_t index) { return at(index); }
 
-        constexpr Type& x() { return at(0); }
-        constexpr Type const& x() const { return at(0); }
-        constexpr Type& y() requires(Dimension > 1) { return at(1); }
-        constexpr Type const& y() const requires(Dimension > 1) { return at(1); }
-        constexpr Type& z() requires(Dimension > 2) { return at(2); }
-        constexpr Type const& z() const requires(Dimension > 2) { return at(2); }
+        constexpr Type const &operator[](std::size_t index) const { return at(index); }
 
-        constexpr Vec& operator+=(Vec const& other) {
-            for_each(*this, [&other](std::size_t i, Type& value) { value += other.at(i); });
+        constexpr Type &x() { return at(0); }
+
+        constexpr Type const &x() const { return at(0); }
+
+        constexpr Type &y() requires(Dimension > 1) { return at(1); }
+
+        constexpr Type const &y() const requires(Dimension > 1) { return at(1); }
+
+        constexpr Type &z() requires(Dimension > 2) { return at(2); }
+
+        constexpr Type const &z() const requires(Dimension > 2) { return at(2); }
+
+        constexpr Vec &operator+=(Vec const &other) {
+            for_each(*this, [&other](std::size_t i, Type &value) { value += other.at(i); });
             return *this;
         }
 
-        constexpr Vec& operator-=(Vec const& other) {
-            for_each(*this, [&other](std::size_t i, Type& value) { value -= other.at(i); });
+        constexpr Vec &operator-=(Vec const &other) {
+            for_each(*this, [&other](std::size_t i, Type &value) { value -= other.at(i); });
             return *this;
         }
 
-        constexpr Vec& operator*=(Vec const& other) {
-            for_each(*this, [&other](std::size_t i, Type& value) { value *= other.at(i); });
+        constexpr Vec &operator*=(Vec const &other) {
+            for_each(*this, [&other](std::size_t i, Type &value) { value *= other.at(i); });
             return *this;
         }
 
-        constexpr Vec& operator/=(Vec const& other) {
-            for_each(*this, [&other](std::size_t i, Type& value) { value /= other.at(i); });
+        constexpr Vec &operator/=(Vec const &other) {
+            for_each(*this, [&other](std::size_t i, Type &value) { value /= other.at(i); });
             return *this;
         }
 
-        constexpr Vec& operator+=(Type const type) {
-            for_each(*this, [type](std::size_t, Type& value) { value += type; });
+        constexpr Vec &operator+=(Type const type) {
+            for_each(*this, [type](std::size_t, Type &value) { value += type; });
             return *this;
         }
 
-        constexpr Vec& operator-=(Type const type) {
-            for_each(*this, [type](std::size_t, Type& value) { value -= type; });
+        constexpr Vec &operator-=(Type const type) {
+            for_each(*this, [type](std::size_t, Type &value) { value -= type; });
             return *this;
         }
 
-        constexpr Vec& operator*=(Type const type) {
-            for_each(*this, [type](std::size_t, Type& value) { value *= type; });
+        constexpr Vec &operator*=(Type const type) {
+            for_each(*this, [type](std::size_t, Type &value) { value *= type; });
             return *this;
         }
 
-        constexpr Vec& operator/=(Type const type) {
-            for_each(*this, [type](std::size_t, Type& value) { value /= type; });
+        constexpr Vec &operator/=(Type const type) {
+            for_each(*this, [type](std::size_t, Type &value) { value /= type; });
             return *this;
         }
 
-        friend constexpr Vec operator-(Vec const& v) {
+        friend constexpr Vec operator-(Vec const &v) {
             auto ret = v;
-            for (auto& value : ret.m_values) { value = -value; }
+            for (auto &value: ret.m_values) { value = -value; }
             return ret;
         }
 
-        template <typename F, typename T>
-        static constexpr void for_each(T&& vec, F&& func) {
+        template<typename F, typename T>
+        static constexpr void for_each(T &&vec, F &&func) {
             for (std::size_t i = 0; i < Dimension; ++i) { func(i, vec.m_values[i]); }
         }
 
-        constexpr iterator begin() { return values.begin(); }
-        constexpr iterator end() { return values.end(); }
-        constexpr const_iterator begin() const { return values.begin(); }
-        constexpr const_iterator end() const { return values.end(); }
+        constexpr iterator begin() { return m_values.begin(); }
 
-        bool operator==(Vec const&) const = default;
+        constexpr iterator end() { return m_values.end(); }
+
+        constexpr const_iterator begin() const { return m_values.begin(); }
+
+        constexpr const_iterator end() const { return m_values.end(); }
+
+        bool operator==(Vec const &) const = default;
+
+        friend std::ostream &operator<<(std::ostream &os, const Vec &vec) {
+            for (std::size_t i = 0; i < Dimension - 1; ++i) {
+                os << vec.m_values[i] << ' ';
+            }
+            os << vec.m_values[Dimension - 1] << std::endl;
+
+            return os;
+        }
 
     private:
-        storage values{};
+        storage m_values{};
     };
 
-    template <std::size_t Dimension>
-    constexpr Vec<float, Dimension> lerp(Vec<float, Dimension> const& a, Vec<float, Dimension> const& b, float const t) {
+    template<std::size_t Dimension>
+    constexpr Vec<float, Dimension>
+    lerp(Vec<float, Dimension> const &a, Vec<float, Dimension> const &b, float const t) {
         auto ret = Vec<float, Dimension>{};
-        Vec<float, Dimension>::for_each(ret, [&a, &b, t](std::size_t i, float& value) { value = std::lerp(a[i], b[i], t); });
+        Vec<float, Dimension>::for_each(ret,
+                                        [&a, &b, t](std::size_t i, float &value) { value = std::lerp(a[i], b[i], t); });
         return ret;
     }
 
-    template <typename Type, std::size_t Dimension>
-    constexpr Type dot(Vec<Type, Dimension> const& a, Vec<Type, Dimension> const& b) {
+    template<typename Type, std::size_t Dimension>
+    constexpr Type dot(Vec<Type, Dimension> const &a, Vec<Type, Dimension> const &b) {
         auto ret = Type{};
-        Vec<Type, Dimension>::for_each(a, [&b, &ret](std::size_t i, Type const& value) { ret += value * b[i]; });
+        Vec<Type, Dimension>::for_each(a, [&b, &ret](std::size_t i, Type const &value) { ret += value * b[i]; });
         return ret;
     }
 
-    template <typename Type, std::size_t Dimension>
-    constexpr Vec<Type, Dimension> sqr_mag(Vec<Type, Dimension> const& vec) {
+    template<typename Type, std::size_t Dimension>
+    constexpr Vec<Type, Dimension> sqr_mag(Vec<Type, Dimension> const &vec) {
         return dot(vec, vec);
     }
 
-    template <typename Type, std::size_t Dimension>
-    float magnitude(Vec<Type, Dimension> const& vec) {
+    template<typename Type, std::size_t Dimension>
+    float magnitude(Vec<Type, Dimension> const &vec) {
         return std::sqrt(dot(vec, vec));
     }
 
-    template <std::size_t Dimension>
-    Vec<float, Dimension> normalize(Vec<float, Dimension> const& in, float const epsilon = 0.001f) {
+    template<std::size_t Dimension>
+    Vec<float, Dimension> normalize(Vec<float, Dimension> const &in, float const epsilon = 0.001f) {
         auto const mag = magnitude(in);
         if (std::abs(mag) < epsilon) { return {}; }
         return in / mag;
     }
 
-    template <typename Type>
+    template<typename Type>
     constexpr auto zero_v = Type{};
 
-    template <typename Type>
+    template<typename Type>
     constexpr auto one_v = static_cast<Type>(1);
 
     using fvec2 = Vec<float, 2>;
